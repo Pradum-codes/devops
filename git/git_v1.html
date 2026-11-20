@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Git Field Manual</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Newsreader:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #111;
+        --paper: #fbf9f4;
+        --low: #f5f3ec;
+        --y: #ffe500;
+        --red: #dc2626;
+        --mut: #777772;
+        --mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+        --sans: "Space Grotesk", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        border-radius: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 16px;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          400 1.0625rem/1.6 "Newsreader",
+          Georgia,
+          serif;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .side {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 270px;
+        border-right: 1.5px solid var(--ink);
+        background: var(--low);
+        padding: 20px 16px;
+        overflow: auto;
+      }
+      .side h2 {
+        font: 700 1.1rem/1.1 var(--sans);
+        text-transform: uppercase;
+        margin: 0 0 4px;
+      }
+      .side small,
+      .mono {
+        font: 400 0.72rem var(--mono);
+        color: var(--mut);
+      }
+      .side nav {
+        margin: 18px 0;
+      }
+      .side a {
+        display: block;
+        font: 700 0.8rem var(--sans);
+        text-transform: uppercase;
+        color: var(--ink);
+        text-decoration: none;
+        padding: 7px 8px;
+        border: 1.5px solid transparent;
+        border-bottom: 1px dashed #c9c7bf;
+      }
+      .side a b {
+        display: inline-block;
+        background: var(--ink);
+        color: var(--y);
+        font: 700 0.7rem var(--mono);
+        padding: 1px 5px;
+        margin-right: 8px;
+      }
+      .side a:hover,
+      .side a.on {
+        background: var(--y);
+        border: 1.5px solid var(--ink);
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        background: var(--y);
+        color: var(--ink);
+        border: 1.5px solid var(--ink);
+        box-shadow: 3px 3px 0 var(--ink);
+        font: 700 0.8rem var(--mono);
+        padding: 10px;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+      .btn:active {
+        box-shadow: 0 0 0 var(--ink);
+        transform: translate(3px, 3px);
+      }
+      .btn:focus-visible,
+      .side a:focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 2px;
+      }
+      main {
+        margin-left: 270px;
+        padding: 28px 44px 60px;
+        max-width: 1040px;
+      }
+      .mast {
+        border: 1.5px solid var(--ink);
+        background: #fff;
+        padding: 18px 22px;
+        margin-bottom: 34px;
+        position: relative;
+      }
+      .mast:before {
+        position: absolute;
+        top: -1px;
+        right: 8px;
+        font: 400 0.7rem var(--mono);
+        background: var(--paper);
+        padding: 0 6px;
+        transform: translateY(-50%);
+      }
+      .mast h1 {
+        font: 800 clamp(2.2rem, 5vw, 3.4rem)/1 var(--sans);
+        text-transform: uppercase;
+        margin: 6px 0 10px;
+        letter-spacing: -0.01em;
+      }
+      .mast p {
+        margin: 0;
+        max-width: 62ch;
+        color: #444;
+      }
+      section {
+        margin: 0 0 54px;
+      }
+      h2.act {
+        font: 700 1.125rem var(--sans);
+        text-transform: uppercase;
+        border-bottom: 1.5px solid var(--ink);
+        padding-bottom: 8px;
+        margin: 0 0 16px;
+      }
+      h2.act b {
+        background: var(--y);
+        border: 1.5px solid var(--ink);
+        font: 700 0.8rem var(--mono);
+        padding: 2px 7px;
+        margin-right: 10px;
+      }
+      h3 {
+        font: 700 0.95rem var(--sans);
+        text-transform: uppercase;
+        margin: 24px 0 6px;
+      }
+      p {
+        margin: 0 0 12px;
+        max-width: 74ch;
+      }
+      code {
+        font: 400 0.86em var(--mono);
+        background: var(--low);
+        border: 1px solid #cfcdc4;
+        padding: 0 4px;
+      }
+      .fig {
+        border: 1.5px solid var(--ink);
+        background: #fff;
+        box-shadow: 3px 3px 0 var(--ink);
+        margin: 18px 3px 22px 0;
+        break-inside: avoid;
+      }
+      .fh {
+        font: 700 0.75rem var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border-bottom: 1.5px solid var(--ink);
+        padding: 6px 12px;
+        background: var(--low);
+      }
+      .fh i {
+        font-style: normal;
+        background: var(--y);
+        padding: 0 5px;
+        margin-right: 6px;
+      }
+      .fig svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        padding: 10px;
+        font-family: var(--mono);
+      }
+      svg rect,
+      svg circle {
+        stroke: #111;
+        stroke-width: 1.5;
+      }
+      svg line,
+      svg path {
+        stroke: #111;
+        stroke-width: 1.5;
+        fill: none;
+      }
+      svg marker path {
+        fill: #111;
+      }
+      svg text {
+        fill: #111;
+        stroke: none;
+      }
+      .cl {
+        border: 1.5px solid var(--ink);
+        border-left-width: 9px;
+        background: #fff;
+        padding: 9px 14px;
+        margin: 14px 0;
+        break-inside: avoid;
+        max-width: 74ch;
+      }
+      .cl b {
+        font: 700 0.72rem var(--mono);
+        padding: 2px 6px;
+        margin-right: 8px;
+        background: var(--y);
+        border: 1.5px solid var(--ink);
+      }
+      .cl.imp {
+        border-left-color: var(--y);
+      }
+      .cl.dng {
+        border-left-color: var(--red);
+      }
+      .cl.dng b {
+        background: var(--red);
+        color: #fff;
+        border-color: var(--red);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        background: #fff;
+        border: 1.5px solid var(--ink);
+        margin: 10px 0 18px;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        border: 1px solid var(--ink);
+        padding: 5px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: var(--low);
+        font: 700 0.72rem var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      td:first-child.c {
+        font: 700 0.8rem var(--mono);
+        white-space: nowrap;
+      }
+      pre {
+        background: #fff;
+        border: 1.5px solid var(--ink);
+        padding: 10px 14px;
+        font: 400 0.82rem/1.5 var(--mono);
+        overflow: auto;
+        break-inside: avoid;
+        margin: 10px 0 16px;
+      }
+      footer {
+        border-top: 1.5px dashed var(--ink);
+        padding-top: 10px;
+      }
+      @media (max-width: 900px) {
+        .side {
+          position: static;
+          width: auto;
+          border: 0;
+          border-bottom: 1.5px solid var(--ink);
+        }
+        main {
+          margin: 0;
+          padding: 20px 16px;
+        }
+      }
+      @media print {
+        .side,
+        .btn {
+          display: none;
+        }
+        main {
+          margin: 0;
+          padding: 0;
+          max-width: none;
+        }
+        body {
+          background: #fff;
+          font-size: 10.5pt;
+        }
+        section {
+          margin-bottom: 26px;
+        }
+        h2.act,
+        h3 {
+          break-after: avoid;
+        }
+        table,
+        .cl {
+          break-inside: avoid;
+        }
+        @page {
+          margin: 14mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="side">
+      <h2>Git Field<br />Manual</h2>
+      <small>VOL. 1.0</small>
+      <nav id="nav"></nav>
+      <button class="btn" onclick="window.print()">[ DOWNLOAD AS PDF ]</button
+      ><small style="display: block; margin-top: 8px"
+        >Opens print dialog. Choose "Save as PDF".</small
+      >
+    </aside>
+    <main>
+      <header class="mast">
+        <h1>Git Field Manual</h1>
+      </header>
+
+      <section id="s1">
+        <h2 class="act"><b>01</b>Mental model</h2>
+        <p>
+          Git is a distributed version control system. It saves your project as
+          a series of snapshots, so you can go back in time, work on ideas in
+          parallel and share work without overwriting anyone. Git is the tool on
+          your computer. GitHub is a website that hosts copies of Git
+          repositories.
+        </p>
+        <p>
+          Each commit stores a snapshot of the whole project. A commit points to
+          a tree (a folder listing), and the tree points to blobs (file
+          contents). Files that did not change are reused, not copied. Every
+          object has a 40-character hash, so history is tamper-evident.
+        </p>
+        <div class="fig" data-f="f1" data-c="Commit, tree and blob"></div>
+        <div class="cl imp">
+          <b>IMPORTANT</b>A branch is a tiny pointer to one commit. HEAD is a
+          pointer to where you are now. Committing moves the current branch
+          forward. This is why branches cost almost nothing.
+        </div>
+        <div
+          class="fig"
+          data-f="f2"
+          data-c="Branches and HEAD are pointers"
+        ></div>
+        <p>
+          Detached HEAD means HEAD points straight at a commit instead of a
+          branch. New commits there are easy to lose, so run
+          <code>git switch -c name</code> to keep them. The repository itself is
+          the hidden <code>.git</code> folder.
+        </p>
+      </section>
+
+      <section id="s2">
+        <h2 class="act"><b>02</b>Three areas</h2>
+        <p>
+          Your edits live in the working directory. <code>git add</code> copies
+          chosen changes into the staging area, which is a draft of the next
+          commit. <code>git commit</code> saves that draft permanently in the
+          repository.
+        </p>
+        <div
+          class="fig"
+          data-f="f3"
+          data-c="Working directory, staging, repository"
+        ></div>
+        <div class="fig" data-f="f4" data-c="File lifecycle"></div>
+        <div class="cl imp">
+          <b>IMPORTANT</b>A file can be staged and modified at once. The commit
+          takes only the staged version. Run <code>git status</code> and
+          <code>git diff --staged</code> before every commit.
+        </div>
+      </section>
+
+      <section id="s3">
+        <h2 class="act"><b>03</b>Setup and daily loop</h2>
+        <p>Set your identity once. It is written into every commit.</p>
+        <pre>
+git config --global user.name  "Your Name"
+git config --global user.email "you@example.com"
+git config --global init.defaultBranch main</pre
+        >
+        <p>
+          Loop: edit, <code>status</code>, <code>diff</code>, <code>add</code>,
+          <code>commit</code>, then <code>push</code> when sharing. Write
+          commits in imperative mood: "Add login validation", not "fixed stuff".
+          One idea per commit.
+        </p>
+        <div data-t="basic"></div>
+        <div class="cl dng">
+          <b>DANGER!</b>Never commit passwords, API keys or
+          <code>.env</code> files. After a push, treat the secret as leaked and
+          rotate it. <code>.gitignore</code> only affects untracked files; for
+          tracked ones run <code>git rm --cached file</code> first.
+        </div>
+      </section>
+
+      <section id="s4">
+        <h2 class="act"><b>04</b>Undoing things</h2>
+        <p>
+          Pick the tool by where the mistake is. Work only in your working
+          directory or staging area: use <code>restore</code>. Committed but not
+          pushed: <code>amend</code> or <code>reset</code>. Already pushed:
+          <code>revert</code>.
+        </p>
+        <div class="fig" data-f="f5" data-c="Which undo do I need?"></div>
+        <h3>Reset has three strengths</h3>
+        <table>
+          <tr>
+            <th>Mode</th>
+            <th>Branch pointer</th>
+            <th>Staging</th>
+            <th>Working files</th>
+          </tr>
+          <tr>
+            <td class="c">--soft</td>
+            <td>moves back</td>
+            <td>kept (staged)</td>
+            <td>kept</td>
+          </tr>
+          <tr>
+            <td class="c">--mixed (default)</td>
+            <td>moves back</td>
+            <td>cleared</td>
+            <td>kept</td>
+          </tr>
+          <tr>
+            <td class="c">--hard</td>
+            <td>moves back</td>
+            <td>cleared</td>
+            <td><b style="color: var(--red)">edits lost</b></td>
+          </tr>
+        </table>
+        <div data-t="undo"></div>
+        <div class="cl dng">
+          <b>DANGER!</b><code>reset --hard</code> and
+          <code>restore</code> delete uncommitted work for good. Never reset
+          commits that others have pulled. Revert them instead.
+        </div>
+      </section>
+
+      <section id="s5">
+        <h2 class="act"><b>05</b>Branch and merge</h2>
+        <p>
+          Merge into the branch you are on: <code>git switch main</code>, then
+          <code>git merge feature</code>. If main has not moved, Git slides the
+          label forward (fast-forward). If both moved, Git makes a merge commit
+          with two parents.
+        </p>
+        <div class="fig" data-f="f6" data-c="Three-way merge"></div>
+        <h3>Conflicts</h3>
+        <p>
+          A conflict means both sides changed the same lines. Edit the file to
+          the final result, delete the three marker lines, then
+          <code>git add</code> and <code>git commit</code>.
+        </p>
+        <pre>
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD        your version
+=======
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature       incoming version</pre
+        >
+        <div data-t="branch"></div>
+      </section>
+
+      <section id="s6">
+        <h2 class="act"><b>06</b>Rebase, cherry-pick, stash</h2>
+        <p>
+          Rebase replays your commits on top of another commit. The commits get
+          new hashes and the history becomes a straight line. Cherry-pick copies
+          a single commit. Stash shelves uncommitted work so you can switch
+          tasks.
+        </p>
+        <div class="fig" data-f="f7" data-c="Rebase onto main"></div>
+        <table>
+          <tr>
+            <th></th>
+            <th>Merge</th>
+            <th>Rebase</th>
+          </tr>
+          <tr>
+            <td>History</td>
+            <td>Branched, true to events</td>
+            <td>Linear, rewritten</td>
+          </tr>
+          <tr>
+            <td>Shared branches</td>
+            <td>Safe</td>
+            <td>Never</td>
+          </tr>
+          <tr>
+            <td>Use for</td>
+            <td>Finished work into main</td>
+            <td>Tidying your own local branch</td>
+          </tr>
+        </table>
+        <div class="cl dng">
+          <b>DANGER!</b>Golden rule: never rebase commits that exist on a shared
+          remote branch.
+        </div>
+        <div data-t="rebase"></div>
+      </section>
+
+      <section id="s7">
+        <h2 class="act"><b>07</b>Remotes</h2>
+        <p>
+          A remote is another copy of the repo, usually named
+          <code>origin</code>. <code>origin/main</code> is your local record of
+          the remote branch. It updates only when you fetch, pull or push. Fetch
+          downloads and changes nothing. Pull is fetch plus merge.
+        </p>
+        <div class="fig" data-f="f8" data-c="Local and remote"></div>
+        <div class="cl imp">
+          <b>IMPORTANT</b>If a push is rejected, the remote has commits you
+          lack. Pull, resolve any conflicts, push again. If you must force, use
+          <code>--force-with-lease</code>, and never on main.
+        </div>
+        <div data-t="remote"></div>
+      </section>
+
+      <section id="s8">
+        <h2 class="act"><b>08</b>Team workflows</h2>
+        <p>
+          GitHub Flow keeps main always deployable. Branch for every change,
+          push often, open a pull request, merge after review and passing tests,
+          then delete the branch. For open source, fork the project, clone your
+          fork, add the original as <code>upstream</code>, push a branch to your
+          fork and open the pull request from there.
+        </p>
+        <div class="fig" data-f="f9" data-c="GitHub flow"></div>
+        <table>
+          <tr>
+            <th>Model</th>
+            <th>Idea</th>
+            <th>Fits</th>
+          </tr>
+          <tr>
+            <td>GitHub Flow</td>
+            <td>main plus short branches and PRs</td>
+            <td>Web apps</td>
+          </tr>
+          <tr>
+            <td>Git Flow</td>
+            <td>main, develop, release, hotfix</td>
+            <td>Versioned releases</td>
+          </tr>
+          <tr>
+            <td>Trunk-based</td>
+            <td>Tiny commits to main, feature flags</td>
+            <td>Mature CI/CD</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="s9">
+        <h2 class="act"><b>09</b>History and recovery</h2>
+        <p>
+          The reflog records every place HEAD has been for about 90 days, even
+          commits no branch points to. After a bad reset, rebase or deleted
+          branch, find the old hash there and put a branch on it.
+        </p>
+        <div class="cl imp">
+          <b>IMPORTANT</b>Committed work is very hard to lose. Uncommitted work
+          is easy to lose. History others have pulled is read-only.
+        </div>
+        <div data-t="hist"></div>
+      </section>
+
+      <section id="s11">
+        <h2 class="act"><b>10</b>Tags and releases</h2>
+        <p>
+          A tag is a permanent name for a commit, mostly used for releases.
+          Unlike a branch, a tag never moves. Tags are not pushed by default, so
+          push them on purpose.
+        </p>
+        <table>
+          <tr>
+            <th>Type</th>
+            <th>Command</th>
+            <th>Stores</th>
+          </tr>
+          <tr>
+            <td>Lightweight</td>
+            <td class="c">git tag v1.0</td>
+            <td>Only a pointer</td>
+          </tr>
+          <tr>
+            <td>Annotated (preferred)</td>
+            <td class="c">git tag -a v1.0 -m "First release"</td>
+            <td>Tagger, date, message</td>
+          </tr>
+        </table>
+        <pre>
+git tag                          # list tags
+git tag -a v0.9.0 &lt;commit&gt; -m "msg"  # tag an older commit
+git push origin v1.0.0           # publish one tag (or --tags for all)
+git tag -d v1.0.0                # delete locally
+git push origin --delete v1.0.0  # delete on the remote
+git checkout v1.0.0              # view that release (detached HEAD)</pre
+        >
+        <p>
+          Semantic versioning reads MAJOR.MINOR.PATCH. In 2.4.1, the 2 changes
+          when something breaks, the 4 when a feature is added compatibly, and
+          the 1 for bug fixes.
+        </p>
+      </section>
+
+      <section id="s12">
+        <h2 class="act"><b>11</b>Reference tables</h2>
+        <h3>Naming a commit</h3>
+        <table>
+          <tr>
+            <th>Notation</th>
+            <th>Meaning</th>
+          </tr>
+          <tr>
+            <td class="c">HEAD</td>
+            <td>Current commit</td>
+          </tr>
+          <tr>
+            <td class="c">HEAD~1 or HEAD^</td>
+            <td>Parent of HEAD</td>
+          </tr>
+          <tr>
+            <td class="c">HEAD~3</td>
+            <td>Three commits back along the first parent</td>
+          </tr>
+          <tr>
+            <td class="c">a1b2c3d</td>
+            <td>First 7 or so characters of a hash</td>
+          </tr>
+          <tr>
+            <td class="c">v1.0</td>
+            <td>A tag</td>
+          </tr>
+          <tr>
+            <td class="c">origin/main</td>
+            <td>Your last-known copy of the remote branch</td>
+          </tr>
+        </table>
+        <h3>Interactive rebase words</h3>
+        <p>
+          Run <code>git rebase -i HEAD~4</code> and change the first word on
+          each line. Use it to squash messy "wip" commits into one clear commit
+          before a pull request.
+        </p>
+        <table>
+          <tr>
+            <th>Word</th>
+            <th>Effect</th>
+          </tr>
+          <tr>
+            <td class="c">pick</td>
+            <td>Keep the commit as is</td>
+          </tr>
+          <tr>
+            <td class="c">reword</td>
+            <td>Keep it, edit the message</td>
+          </tr>
+          <tr>
+            <td class="c">edit</td>
+            <td>Pause so you can change the commit</td>
+          </tr>
+          <tr>
+            <td class="c">squash</td>
+            <td>Merge into the previous commit, combine messages</td>
+          </tr>
+          <tr>
+            <td class="c">fixup</td>
+            <td>Merge into the previous commit, drop this message</td>
+          </tr>
+          <tr>
+            <td class="c">drop</td>
+            <td>Delete the commit</td>
+          </tr>
+        </table>
+        <h3>Fetch versus pull</h3>
+        <table>
+          <tr>
+            <th></th>
+            <th>git fetch</th>
+            <th>git pull</th>
+          </tr>
+          <tr>
+            <td>Downloads commits</td>
+            <td>Yes</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Changes your branch and files</td>
+            <td><b>No</b></td>
+            <td>Yes (merge or rebase)</td>
+          </tr>
+          <tr>
+            <td>Conflict risk</td>
+            <td>None</td>
+            <td>Possible</td>
+          </tr>
+        </table>
+        <div
+          class="fig"
+          data-f="f10"
+          data-c="Stash: shelve, switch, restore"
+        ></div>
+        <pre>
+git stash push -m "login form"   # label it
+git stash list                   # stash@{0}, stash@{1} ...
+git stash show -p stash@{0}      # preview as a diff
+git stash apply stash@{1}        # restore but keep it
+git stash drop stash@{0}         # delete one</pre
+        >
+        <div class="cl imp">
+          <b>IMPORTANT</b><code>pop</code> applies and deletes.
+          <code>apply</code> only applies. If pop hits a conflict, the stash is
+          kept, so nothing is lost.
+        </div>
+        <h3>Config levels and aliases</h3>
+        <table>
+          <tr>
+            <th>Level</th>
+            <th>Flag</th>
+            <th>File</th>
+          </tr>
+          <tr>
+            <td>System</td>
+            <td class="c">--system</td>
+            <td>/etc/gitconfig</td>
+          </tr>
+          <tr>
+            <td>Global</td>
+            <td class="c">--global</td>
+            <td>~/.gitconfig</td>
+          </tr>
+          <tr>
+            <td>Local (default)</td>
+            <td class="c">none</td>
+            <td>.git/config</td>
+          </tr>
+        </table>
+        <pre>
+git config --global alias.st "status -sb"
+git config --global alias.lg "log --oneline --graph --decorate --all"</pre
+        >
+        <h3>A typical .gitignore</h3>
+        <pre>
+node_modules/
+dist/
+__pycache__/
+.env
+*.pem
+.DS_Store
+.idea/</pre
+        >
+      </section>
+
+      <section id="s13">
+        <h2 class="act"><b>12</b>Teamwork in detail</h2>
+        <h3>Fork and pull request</h3>
+        <pre>
+git clone https://github.com/YOU/project.git
+git remote add upstream https://github.com/ORIGINAL/project.git
+git fetch upstream
+git switch main &amp;&amp; git merge upstream/main   # sync your fork
+git push origin main</pre
+        >
+        <h3>Pull request etiquette</h3>
+        <p>
+          Keep each PR small and focused, and explain what changed and why. Link
+          the issue (<code>Closes #42</code>). Run tests before asking for
+          review. Answer review comments with new commits. When merging, choose
+          merge commit (keeps all history), squash and merge (one clean commit)
+          or rebase and merge (linear history).
+        </p>
+        <h3>Proving who you are</h3>
+        <p>
+          GitHub no longer accepts account passwords for Git. Use a personal
+          access token over HTTPS, or an SSH key.
+        </p>
+        <pre>
+ssh-keygen -t ed25519 -C "you@example.com"
+cat ~/.ssh/id_ed25519.pub        # paste into GitHub, Settings, SSH keys
+ssh -T git@github.com            # test
+git remote set-url origin git@github.com:user/repo.git</pre
+        >
+        <div class="cl dng">
+          <b>DANGER!</b>Never share or commit the private key (the file without
+          .pub).
+        </div>
+        <h3>Finding a bug with bisect</h3>
+        <div
+          class="fig"
+          data-f="f11"
+          data-c="Bisect: binary search through history"
+        ></div>
+      </section>
+
+      <section id="s14">
+        <h2 class="act"><b>13</b>Advanced tools</h2>
+        <table>
+          <tr>
+            <th>Tool</th>
+            <th>What it does</th>
+            <th>Commands</th>
+          </tr>
+          <tr>
+            <td>Hooks</td>
+            <td>
+              Scripts in .git/hooks that run on events such as pre-commit,
+              commit-msg and pre-push. Not shared through the repo unless you
+              use Husky or pre-commit.
+            </td>
+            <td class="c">rename pre-commit.sample</td>
+          </tr>
+          <tr>
+            <td>Submodules</td>
+            <td>Embed one repo inside another at a fixed commit.</td>
+            <td class="c">
+              git submodule add &lt;url&gt; path<br />git clone
+              --recurse-submodules
+            </td>
+          </tr>
+          <tr>
+            <td>Worktrees</td>
+            <td>Check out several branches at once in separate folders.</td>
+            <td class="c">git worktree add ../dir branch</td>
+          </tr>
+          <tr>
+            <td>Git LFS</td>
+            <td>Keeps large binaries out of normal history.</td>
+            <td class="c">git lfs track "*.psd"</td>
+          </tr>
+          <tr>
+            <td>filter-repo</td>
+            <td>
+              Purges a secret or huge file from all history. Rewrites every
+              commit, so everyone must re-clone.
+            </td>
+            <td class="c">git filter-repo</td>
+          </tr>
+          <tr>
+            <td>Other</td>
+            <td>Word diff, export a snapshot, integrity check.</td>
+            <td class="c">
+              git diff --word-diff<br />git archive -o p.zip HEAD<br />git fsck
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="s15">
+        <h2 class="act"><b>14</b>Rules and practice</h2>
+        <h3>Twelve best practices</h3>
+        <p>
+          1. Commit early and often, one idea per commit. 2. Write messages that
+          say why. 3. Never work directly on main. 4. Pull before you start and
+          before you push. 5. Review with status and diff --staged. 6. Never
+          commit secrets or build output. 7. Do not rewrite shared history. 8.
+          Keep branches short and delete them after merging. 9. Use pull
+          requests, even solo. 10. Tag releases. 11. Protect main on GitHub. 12.
+          Know your safety nets: reflog, stash and dry-run flags.
+        </p>
+        <h3>Practice</h3>
+        <table>
+          <tr>
+            <th>Exercise</th>
+            <th>Steps</th>
+          </tr>
+          <tr>
+            <td>1. First repo</td>
+            <td>
+              git init, create a file, status, add, commit, edit, diff, commit,
+              log --oneline.
+            </td>
+          </tr>
+          <tr>
+            <td>2. Branch and merge</td>
+            <td>
+              Commit on feature/a, commit a different file on main, merge. Which
+              kind of merge was it? Read the graph.
+            </td>
+          </tr>
+          <tr>
+            <td>3. Conflict</td>
+            <td>
+              Edit the same line on two branches, merge, fix the markers, add,
+              commit.
+            </td>
+          </tr>
+          <tr>
+            <td>4. Undo ladder</td>
+            <td>
+              Make 3 commits. Try reset --soft, --mixed, then --hard HEAD~1 and
+              recover with reflog and reset --hard HEAD@{1}.
+            </td>
+          </tr>
+          <tr>
+            <td>5. Remote</td>
+            <td>
+              Create a GitHub repo, push -u, branch, push, open and merge a PR,
+              pull, delete the branch.
+            </td>
+          </tr>
+          <tr>
+            <td>6. Clean-up</td>
+            <td>
+              Make four tiny commits, then rebase -i HEAD~4 and squash them.
+            </td>
+          </tr>
+        </table>
+        <h3>Self-check</h3>
+        <p>
+          Can you answer these without looking? What are the three areas? Why is
+          a branch cheap? When is a merge fast-forward? How do reset --hard and
+          revert differ, and which is safe after a push? What is pull in terms
+          of other commands? Why not rebase shared branches? How do you recover
+          a commit after reset --hard? What do the three conflict markers mean?
+        </p>
+        <h3>Glossary</h3>
+        <table>
+          <tr>
+            <th>Term</th>
+            <th>Meaning</th>
+          </tr>
+          <tr>
+            <td>Repository</td>
+            <td>A project plus its full history, stored in .git</td>
+          </tr>
+          <tr>
+            <td>Commit</td>
+            <td>A saved snapshot with message, author and parent</td>
+          </tr>
+          <tr>
+            <td>HEAD</td>
+            <td>Pointer to your current position</td>
+          </tr>
+          <tr>
+            <td>Index</td>
+            <td>The staging area, a draft of the next commit</td>
+          </tr>
+          <tr>
+            <td>origin / upstream</td>
+            <td>Default remote name / the original repo you forked</td>
+          </tr>
+          <tr>
+            <td>Fork</td>
+            <td>Your own server-side copy of someone else's repo</td>
+          </tr>
+          <tr>
+            <td>Fast-forward</td>
+            <td>A merge that only moves a pointer</td>
+          </tr>
+          <tr>
+            <td>Squash</td>
+            <td>Combine several commits into one</td>
+          </tr>
+          <tr>
+            <td>Reflog</td>
+            <td>Local log of everywhere HEAD has been</td>
+          </tr>
+          <tr>
+            <td>SHA</td>
+            <td>The 40-character ID of an object</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="s10">
+        <h2 class="act"><b>15</b>Recipes</h2>
+        <div data-t="rec"></div>
+        <footer class="mono">
+          COLOPHON // Practice: <code>learngitbranching.js.org</code> · Book:
+          Pro Git, git-scm.com/book · Help: <code>git help &lt;cmd&gt;</code>
+        </footer>
+      </section>
+    </main>
+    <script>
+      const esc = (s) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const T = {
+        basic: [
+          ["git init", "New repo here"],
+          ["git clone &lt;url&gt;", "Copy a remote repo with full history"],
+          ["git status -sb", "Branch and changes, short"],
+          ["git add -p", "Stage chunk by chunk"],
+          ["git add .", "Stage everything here"],
+          ['git commit -m "msg"', "Save a snapshot"],
+          ["git diff / --staged", "Unstaged / staged changes"],
+          ["git log --oneline --graph --all", "Visual history"],
+          ["git rm --cached f", "Stop tracking, keep the file"],
+          ["git mv a b", "Rename and stage"],
+        ],
+        undo: [
+          ["git restore f", "Discard unstaged edits"],
+          ["git restore --staged f", "Unstage, keep edits"],
+          ["git commit --amend", "Redo last commit (unpushed only)"],
+          ["git reset --soft HEAD~1", "Undo commit, keep staged"],
+          ["git reset HEAD~1", "Undo commit, keep edits unstaged"],
+          ["git reset --hard HEAD~1", "Undo commit and edits"],
+          ["git revert &lt;c&gt;", "Safe undo with a new commit"],
+          ["git clean -nfd", "Dry run before deleting untracked"],
+        ],
+        branch: [
+          ["git switch -c x", "Create and switch"],
+          ["git branch -d x", "Delete a merged branch"],
+          ["git merge x", "Merge x into current branch"],
+          ["git merge --no-ff x", "Force a merge commit"],
+          ["git merge --abort", "Cancel the merge"],
+          ["git checkout --ours f", "Take your side (--theirs for theirs)"],
+        ],
+        rebase: [
+          ["git rebase main", "Replay current branch on main"],
+          ["git rebase -i HEAD~4", "Squash, reword, drop last 4 commits"],
+          ["git rebase --continue / --abort", "After a conflict / cancel"],
+          ["git cherry-pick &lt;c&gt;", "Copy one commit here"],
+          ["git stash -u", "Shelve work incl. untracked"],
+          ["git stash pop", "Restore and remove the stash"],
+          ["git stash list", "Show shelved work"],
+        ],
+        remote: [
+          ["git remote add origin &lt;url&gt;", "Connect a remote"],
+          ["git push -u origin main", "First push, link branches"],
+          ["git fetch --all --prune", "Download only, tidy deleted branches"],
+          ["git pull --rebase", "Fetch then rebase"],
+          ["git push --force-with-lease", "Safer force push"],
+          ["git push origin --delete x", "Delete remote branch"],
+          ['git tag -a v1.0 -m "msg"', "Release tag"],
+          ["git push --tags", "Publish tags"],
+        ],
+        hist: [
+          ['git log -S"text"', "When did this text appear or go"],
+          ['git log --grep="word"', "Search messages"],
+          ["git blame f", "Who changed each line"],
+          [
+            "git bisect start / good / bad",
+            "Binary-search the breaking commit",
+          ],
+          ["git reflog", "Where HEAD has been"],
+          ["git branch rescued &lt;hash&gt;", "Save a lost commit"],
+        ],
+        rec: [
+          [
+            "Committed to wrong branch (unpushed)",
+            "git branch right; git reset --hard HEAD~1; git switch right",
+          ],
+          ["Typo in last message", 'git commit --amend -m "New"'],
+          [
+            "Forgot a file in last commit",
+            "git add f; git commit --amend --no-edit",
+          ],
+          ["Undo last commit, keep work", "git reset --soft HEAD~1"],
+          ["Bad commit already pushed", "git revert &lt;c&gt;; git push"],
+          ["Deleted a branch", "git reflog; git branch name &lt;hash&gt;"],
+          ["Detached HEAD with new commits", "git switch -c rescue"],
+          [
+            "Secret committed",
+            "Rotate it first, then git filter-repo and force-push",
+          ],
+          ["Local changes block a switch", "git stash, then switch"],
+          ["Combine last 3 commits", "git reset --soft HEAD~3; git commit"],
+        ],
+      };
+      T.rec.push(
+        ["File ignored but still tracked", "git rm --cached f; commit"],
+        [
+          "Pull says divergent branches",
+          "git pull --no-rebase, or git pull --rebase",
+        ],
+        [
+          "Merge went wrong",
+          "git merge --abort; if committed, git reset --hard ORIG_HEAD",
+        ],
+        ["Staged the wrong file", "git restore --staged f"],
+        [
+          "Need one file from an old commit",
+          "git restore --source=&lt;c&gt; path/f",
+        ],
+        [
+          "Huge file committed",
+          "git rm --cached big.bin, ignore it, git filter-repo to purge",
+        ],
+      );
+      document.querySelectorAll("[data-t]").forEach((d) => {
+        const r = T[d.dataset.t],
+          h =
+            d.dataset.t == "rec"
+              ? "<tr><th>Situation</th><th>Fix</th></tr>"
+              : "<tr><th>Command</th><th>Does</th></tr>";
+        d.innerHTML =
+          "<table>" +
+          h +
+          r
+            .map(
+              (x) =>
+                '<tr><td class="c">' + x[0] + "</td><td>" + x[1] + "</td></tr>",
+            )
+            .join("") +
+          "</table>";
+        if (d.dataset.t == "rec")
+          d.querySelectorAll("td:last-child").forEach((t) => {
+            t.style.font = "400 .82rem var(--mono)";
+          });
+      });
+      const svg = (w, h, c) =>
+        `<svg viewBox="0 0 ${w} ${h}" role="img"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs>${c}</svg>`;
+      const tx = (x, y, t, s = 13, w = 400) =>
+        `<text x="${x}" y="${y}" font-size="${s}" font-weight="${w}" text-anchor="middle">${t}</text>`;
+      const bx = (x, y, w, h, t, f = "#fff", s = 13) =>
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"/>` +
+        t
+          .split("|")
+          .map((l, i, a) =>
+            tx(
+              x + w / 2,
+              y + h / 2 + 4 + (i - (a.length - 1) / 2) * 17,
+              l,
+              s,
+              i ? 400 : 700,
+            ),
+          )
+          .join("");
+      const ar = (a, b, c, d, l = "", s) =>
+        `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" marker-end="url(#a)"${s ? ' stroke-dasharray="6 4"' : ""}/>` +
+        (l ? tx((a + c) / 2, (b + d) / 2 - 7, l, 12) : "");
+      const pa = (d, l, x, y) =>
+        `<path d="${d}" marker-end="url(#a)" stroke-dasharray="6 4"/>` +
+        tx(x, y, l, 12);
+      const ed = (p, q) => {
+        const dx = q[0] - p[0],
+          dy = q[1] - p[1],
+          k = 17 / Math.hypot(dx, dy);
+        return ar(p[0] + dx * k, p[1] + dy * k, q[0] - dx * k, q[1] - dy * k);
+      };
+      const G = (N, E, L) =>
+        E.map((e) => ed(N[e[0]], N[e[1]])).join("") +
+        Object.values(N)
+          .map(
+            (n) =>
+              `<circle cx="${n[0]}" cy="${n[1]}" r="16" fill="${n[3] || "#fff"}"/>` +
+              tx(n[0], n[1] + 4, n[2], 11, 700),
+          )
+          .join("") +
+        L.map((l) => bx(l[1], l[2], l[3] || 64, 28, l[0], "#ffe500", 12)).join(
+          "",
+        );
+      const Y = "#ffe500";
+      const F = {
+        f1: svg(
+          700,
+          230,
+          bx(20, 80, 160, 72, "COMMIT|a1b2c3|author, date, msg", Y) +
+            ar(180, 116, 270, 116) +
+            bx(270, 80, 130, 72, "TREE|root folder") +
+            ar(400, 100, 490, 45) +
+            ar(400, 116, 490, 116) +
+            ar(400, 132, 490, 187) +
+            bx(490, 20, 180, 50, "blob|README.md") +
+            bx(490, 91, 180, 50, "blob|main.py") +
+            bx(490, 162, 180, 50, "tree|src/") +
+            ar(100, 152, 100, 215, "") +
+            tx(150, 212, "parent commit", 12),
+        ),
+        f2: svg(
+          700,
+          190,
+          G(
+            {
+              1: [60, 110, "C1"],
+              2: [180, 110, "C2"],
+              3: [300, 110, "C3"],
+              4: [420, 110, "C4", Y],
+            },
+            [
+              [2, 1],
+              [3, 2],
+              [4, 3],
+            ],
+            [
+              ["main", 388, 40, 64],
+              ["feature", 268, 150, 80],
+            ],
+          ) +
+            ar(420, 68, 420, 92) +
+            bx(520, 40, 64, 28, "HEAD", Y, 12) +
+            ar(520, 54, 452, 54) +
+            ar(308, 150, 304, 128),
+        ),
+        f3: svg(
+          700,
+          225,
+          bx(20, 50, 160, 90, "WORKING|DIRECTORY|you edit here") +
+            bx(270, 50, 160, 90, "STAGING AREA|(index)|next commit", Y) +
+            bx(520, 50, 160, 90, "REPOSITORY|.git folder|history") +
+            ar(180, 85, 270, 85, "git add") +
+            ar(430, 85, 520, 85, "git commit") +
+            ar(270, 115, 180, 115, "unstage") +
+            tx(350, 163, "git restore --staged", 11) +
+            pa(
+              "M600 140V200H100V140",
+              "git restore / git switch bring files back",
+              350,
+              192,
+            ),
+        ),
+        f4: svg(
+          700,
+          200,
+          bx(10, 40, 125, 56, "UNTRACKED") +
+            bx(185, 40, 125, 56, "STAGED", Y) +
+            bx(375, 40, 135, 56, "COMMITTED") +
+            bx(565, 40, 125, 56, "MODIFIED") +
+            ar(135, 68, 185, 68, "add") +
+            ar(310, 68, 375, 68, "commit") +
+            ar(510, 68, 565, 68, "edit") +
+            pa("M627 96V150H247V96", "git add", 437, 142),
+        ),
+        f5: svg(
+          700,
+          215,
+          bx(250, 10, 200, 44, "Where is the mistake?", Y) +
+            [
+              [10, "EDITED ONLY|git restore f"],
+              [185, "STAGED|restore --staged f"],
+              [360, "COMMITTED, LOCAL|amend or reset"],
+              [535, "COMMITTED, PUSHED|git revert c"],
+            ]
+              .map(
+                (l, i) =>
+                  bx(l[0], 130, 155, 66, l[1], i == 3 ? Y : "#fff", 12) +
+                  ar(350, 54, l[0] + 77, 130),
+              )
+              .join(""),
+        ),
+        f6: svg(
+          700,
+          300,
+          tx(10, 20, "BEFORE", 12, 700).replace("middle", "start") +
+            G(
+              {
+                1: [60, 100, "C1"],
+                2: [150, 100, "C2"],
+                3: [240, 100, "C3"],
+                6: [330, 100, "C6"],
+                4: [240, 50, "C4"],
+                5: [330, 50, "C5"],
+              },
+              [
+                [2, 1],
+                [3, 2],
+                [6, 3],
+                [4, 2],
+                [5, 4],
+              ],
+              [
+                ["main", 380, 86, 60],
+                ["feature", 380, 36, 80],
+              ],
+            ) +
+            tx(
+              10,
+              170,
+              "AFTER: merge commit M has two parents",
+              12,
+              700,
+            ).replace("middle", "start") +
+            G(
+              {
+                a: [60, 230, "C1"],
+                b: [150, 230, "C2"],
+                c: [240, 230, "C3"],
+                d: [330, 230, "C6"],
+                e: [240, 270, "C4"],
+                f: [330, 270, "C5"],
+                m: [430, 250, "M", Y],
+              },
+              [
+                ["b", "a"],
+                ["c", "b"],
+                ["d", "c"],
+                ["e", "b"],
+                ["f", "e"],
+                ["m", "d"],
+                ["m", "f"],
+              ],
+              [["main", 475, 236, 60]],
+            ),
+        ),
+        f7: svg(
+          700,
+          310,
+          tx(10, 20, "BEFORE", 12, 700).replace("middle", "start") +
+            G(
+              {
+                1: [60, 90, "C1"],
+                2: [150, 90, "C2"],
+                3: [240, 90, "C3"],
+                6: [330, 90, "C6"],
+                4: [240, 40, "C4"],
+                5: [330, 40, "C5"],
+              },
+              [
+                [2, 1],
+                [3, 2],
+                [6, 3],
+                [4, 2],
+                [5, 4],
+              ],
+              [
+                ["main", 380, 76, 60],
+                ["feature", 380, 26, 80],
+              ],
+            ) +
+            tx(
+              10,
+              165,
+              "AFTER: C4 and C5 replayed on C6, new hashes",
+              12,
+              700,
+            ).replace("middle", "start") +
+            G(
+              {
+                a: [60, 230, "C1"],
+                b: [150, 230, "C2"],
+                c: [240, 230, "C3"],
+                d: [330, 230, "C6"],
+                e: [430, 230, "C4'", Y],
+                f: [520, 230, "C5'", Y],
+              },
+              [
+                ["b", "a"],
+                ["c", "b"],
+                ["d", "c"],
+                ["e", "d"],
+                ["f", "e"],
+              ],
+              [
+                ["main", 300, 270, 60],
+                ["feature", 560, 216, 80],
+              ],
+            ),
+        ),
+        f8: svg(
+          700,
+          250,
+          '<rect x="10" y="30" width="170" height="200" fill="#fff"/>' +
+            tx(95, 22, "YOUR COMPUTER", 12, 700) +
+            '<rect x="500" y="30" width="190" height="200" fill="#fff"/>' +
+            tx(595, 22, "GITHUB (origin)", 12, 700) +
+            bx(35, 55, 120, 50, "local main", Y) +
+            bx(35, 165, 120, 50, "origin/main|tracking copy") +
+            bx(525, 110, 140, 50, "main", "#fff") +
+            ar(155, 75, 525, 125, "git push") +
+            ar(525, 150, 155, 190, "git fetch", 1) +
+            ar(95, 165, 95, 105, "merge") +
+            tx(340, 235, "git pull = git fetch + git merge", 12, 700),
+        ),
+        f9: svg(
+          700,
+          230,
+          [
+            "main|stable",
+            "branch|switch -c",
+            "commit|and push",
+            "open|pull request",
+            "merge|after review",
+          ]
+            .map(
+              (t, i) =>
+                bx(10 + i * 144, 80, 108, 60, t, i == 0 ? Y : "#fff", 12) +
+                (i < 4 ? ar(118 + i * 144, 110, 154 + i * 144, 110) : ""),
+            )
+            .join("") +
+            pa(
+              "M640 140V200H64V140",
+              "delete branch, pull latest main",
+              352,
+              192,
+            ) +
+            pa("M496 80V45H352V80", "changes requested", 424, 38),
+        ),
+      };
+      F.f10 = svg(
+        700,
+        200,
+        [
+          ["WORKING|uncommitted edits", 10],
+          ["STASH|saved safely", 190],
+          ["CLEAN|switch, fix a bug", 370],
+          ["WORKING|edits back", 550],
+        ]
+          .map(
+            (b, i) =>
+              bx(b[1], 40, 140, 70, b[0], i == 1 ? Y : "#fff", 12) +
+              (i < 3
+                ? ar(
+                    b[1] + 140,
+                    75,
+                    b[1] + 180,
+                    75,
+                    ["stash", "switch", "pop"][i],
+                  )
+                : ""),
+          )
+          .join(""),
+      );
+      F.f11 = svg(
+        700,
+        215,
+        bx(10, 60, 130, 60, "START|bisect bad|bisect good v1") +
+          ar(140, 90, 180, 90) +
+          bx(180, 60, 130, 60, "Git checks out|middle commit") +
+          ar(310, 90, 350, 90) +
+          bx(350, 60, 110, 60, "Broken?|test it", Y) +
+          bx(520, 20, 170, 46, "git bisect bad") +
+          bx(520, 100, 170, 46, "git bisect good") +
+          ar(460, 80, 520, 45, "yes") +
+          ar(460, 100, 520, 123, "no") +
+          pa(
+            "M605 146V190H245V120",
+            "repeat: about 7 checks per 100 commits",
+            425,
+            182,
+          ),
+      );
+      document.querySelectorAll(".fig").forEach((f, i) => {
+        f.innerHTML =
+          '<div class="fh"><i>FIG ' +
+          String(i + 1).padStart(2, "0") +
+          "</i>" +
+          f.dataset.c +
+          "</div>" +
+          F[f.dataset.f];
+      });
+      const nav = document.getElementById("nav");
+      document.querySelectorAll("section").forEach((s) => {
+        const h = s.querySelector("h2"),
+          a = document.createElement("a");
+        a.href = "#" + s.id;
+        a.innerHTML =
+          "<b>" + h.firstChild.textContent + "</b>" + h.lastChild.textContent;
+        nav.appendChild(a);
+      });
+      const links = [...nav.children];
+      new IntersectionObserver(
+        (es) =>
+          es.forEach((e) => {
+            if (e.isIntersecting) {
+              links.forEach((l) =>
+                l.classList.toggle(
+                  "on",
+                  l.getAttribute("href") == "#" + e.target.id,
+                ),
+              );
+            }
+          }),
+        { rootMargin: "-20% 0px -70% 0px" },
+      ).observe && document.querySelectorAll("section").forEach((s) => {});
+      const io = new IntersectionObserver(
+        (es) =>
+          es.forEach((e) => {
+            if (e.isIntersecting)
+              links.forEach((l) =>
+                l.classList.toggle(
+                  "on",
+                  l.getAttribute("href") == "#" + e.target.id,
+                ),
+              );
+          }),
+        { rootMargin: "-20% 0px -70% 0px" },
+      );
+      document.querySelectorAll("section").forEach((s) => io.observe(s));
+    </script>
+  </body>
+</html>
